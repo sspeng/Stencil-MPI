@@ -1,0 +1,4 @@
+ Matriz ../inputset/mat5000x5000.txt: 5000x5000
+ Check sum: -390.267914
+ Iteraciones: 96
+ Tiempo de ejecución: 41.709082

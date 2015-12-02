@@ -1,0 +1,55 @@
+
+# 1. Default rule
+.DEFAULT_GOAL=all
+
+# 2. Compilers
+MPICC = mpicc
+CC = gcc
+CP_PRIVATE_CFLAGS := -O3
+
+# 3. Get the current dir
+where-am-i = $(dir $(lastword $(MAKEFILE_LIST)))
+THIS_FOLDER := $(call where-am-i)
+
+# 4. By default, use MPI
+ifeq ($(CP_UTILS),)
+CP_UTILS=mpi
+endif
+
+# 5. Flags and target for:
+
+# Display
+ifeq ($(CP_DISPLAY),yes)
+CP_DISPLAY_CFLAGS := -lX11 -lm -DCP_DISPLAY
+CP_PRIVATE_CFLAGS += -DCP_DISPLAY
+endif
+
+
+# 5.2 Sequential and OpenMP
+ifeq ($(CP_UTILS),seq_omp)
+CP_CFLAGS := -I$(THIS_FOLDER) $(THIS_FOLDER)/cputils.o $(CP_DISPLAY_CFLAGS)
+CP_TARGET := $(THIS_FOLDER)/cputils.o
+endif
+
+# 5.3 MPI
+ifeq ($(CP_UTILS),mpi)
+CP_CFLAGS := -I$(THIS_FOLDER) $(THIS_FOLDER)cputils_mpi.o $(CP_DISPLAY_CFLAGS)
+CP_TARGET := $(THIS_FOLDER)cputils_mpi.o
+endif
+
+
+# TODO: Cuda
+
+
+# 6. Rules for the utils
+$(THIS_FOLDER)/cputils_mpi.o: $(THIS_FOLDER)/cputils.c $(THIS_FOLDER)/cputils.h
+	cd $(THIS_FOLDER); $(MPICC) $(CP_PRIVATE_CFLAGS) cputils.c -c -o cputils_mpi.o 
+
+$(THIS_FOLDER)/cputils.o: $(THIS_FOLDER)/cputils.c $(THIS_FOLDER)/cputils.h
+	cd $(THIS_FOLDER); $(CC) $(CP_PRIVATE_CFLAGS) -DCP_NO_MPI cputils.c -c -o cputils.o 
+
+# 7. Clean
+cleanutils:
+	cd $(THIS_FOLDER); rm -f *.o 
+
+
